@@ -1,0 +1,192 @@
+{
+  "___note___": "Este es un ejemplo completamente funcional de configuración para Fight.net. Todos los valores son reales y están implementados en el sistema.",
+  "business": {
+    "name": "Fight.net",
+    "colors": ["#C0392B", "#2C3E50"],
+    "style": "modern"
+  },
+  "objective": "Consolidar Fight.net como plataforma funcional, sostenible y de impacto social para el ecosistema de deportes de contacto en Aguascalientes en 6 meses.",
+  "period_months": 6,
+  "KRs": [
+    {
+      "name": "Sostenibilidad Financiera",
+      "KPIs": [
+        {
+          "name": "Ingresos Acumulados",
+          "formula": "SUM(monto) agrupado por mes",
+          "chart_type": "line",
+          "unit": "$MXN",
+          "data_sources": [
+            {
+              "table": "pagos",
+              "columns": [
+                {"name": "fecha_pago", "type": "date"},
+                {"name": "monto", "type": "number"},
+                {"name": "concepto", "type": "string"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Promotores con Pago Confirmado",
+          "formula": "COUNT(facturas WHERE concepto = 'publicacion_destacada') por mes",
+          "chart_type": "bar",
+          "unit": "promotores",
+          "data_sources": [
+            {
+              "table": "facturas",
+              "columns": [
+                {"name": "id_promotor", "type": "number"},
+                {"name": "concepto", "type": "string"},
+                {"name": "fecha_emision", "type": "date"},
+                {"name": "estado", "type": "string"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Consolidación de Procesos Operativos",
+      "KPIs": [
+        {
+          "name": "Eventos Verificados Publicados",
+          "formula": "COUNT(eventos WHERE estatus = 'Verificado') por mes",
+          "chart_type": "bar",
+          "unit": "eventos",
+          "data_sources": [
+            {
+              "table": "eventos",
+              "columns": [
+                {"name": "id_evento", "type": "number"},
+                {"name": "fecha_publicacion", "type": "date"},
+                {"name": "estatus", "type": "string"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Emparejamientos Confirmados",
+          "formula": "COUNT(matches WHERE estatus = 'Confirmado por ambas partes')",
+          "chart_type": "bar",
+          "unit": "matches",
+          "data_sources": [
+            {
+              "table": "matches",
+              "columns": [
+                {"name": "id_match", "type": "number"},
+                {"name": "id_peleador", "type": "number"},
+                {"name": "id_promotor", "type": "number"},
+                {"name": "estatus", "type": "string"},
+                {"name": "fecha_confirmacion", "type": "date"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Tasa de Usuarios Activos Recurrentes",
+          "formula": "(COUNT(total_accesos >= 2) / COUNT(total_usuarios)) * 100 por mes",
+          "chart_type": "line",
+          "unit": "%",
+          "data_sources": [
+            {
+              "table": "accesos_usuario",
+              "columns": [
+                {"name": "id_usuario", "type": "number"},
+                {"name": "mes", "type": "date"},
+                {"name": "total_accesos", "type": "number"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Crecimiento de Capital Humano",
+      "KPIs": [
+        {
+          "name": "Usuarios Activos Registrados",
+          "formula": "COUNT(perfil_completo=true AND ultima_actividad >= hoy-30d) por rol",
+          "chart_type": "bar",
+          "unit": "usuarios",
+          "data_sources": [
+            {
+              "table": "usuarios",
+              "columns": [
+                {"name": "id_usuario", "type": "number"},
+                {"name": "perfil_completo", "type": "string"},
+                {"name": "ultima_actividad", "type": "date"},
+                {"name": "rol", "type": "string"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Porcentaje de Peleadores con Participación",
+          "formula": "(COUNT postulados / COUNT peleadores_activos) * 100",
+          "chart_type": "doughnut",
+          "unit": "%",
+          "data_sources": [
+            {
+              "table": "postulaciones",
+              "columns": [
+                {"name": "id_peleador", "type": "number"},
+                {"name": "id_oportunidad", "type": "number"},
+                {"name": "estatus", "type": "string"},
+                {"name": "fecha_postulacion", "type": "date"}
+              ]
+            },
+            {
+              "table": "usuarios",
+              "columns": [
+                {"name": "id_usuario", "type": "number"},
+                {"name": "rol", "type": "string"},
+                {"name": "ultima_actividad", "type": "date"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Impacto ADN - Reducción de Informalidad",
+      "KPIs": [
+        {
+          "name": "Incidentes Graves Abiertos",
+          "formula": "COUNT(gravedad='grave' AND dias_abierto > 15)",
+          "chart_type": "bar",
+          "unit": "incidentes",
+          "data_sources": [
+            {
+              "table": "incidentes",
+              "columns": [
+                {"name": "id_incidente", "type": "number"},
+                {"name": "gravedad", "type": "string"},
+                {"name": "fecha_apertura", "type": "date"},
+                {"name": "estatus", "type": "string"},
+                {"name": "dias_abierto", "type": "number"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Porcentaje de Horas Operativas de Impacto Social",
+          "formula": "(SUM(horas_impacto_social) / SUM(horas_operativas_totales)) * 100 por mes",
+          "chart_type": "bar",
+          "unit": "%",
+          "data_sources": [
+            {
+              "table": "bitacora_horas",
+              "columns": [
+                {"name": "mes", "type": "date"},
+                {"name": "horas_operativas_totales", "type": "number"},
+                {"name": "horas_impacto_social", "type": "number"},
+                {"name": "tipo_actividad", "type": "string"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

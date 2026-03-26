@@ -1,0 +1,7 @@
+id_peleador,id_oportunidad,estatus,fecha_postulacion
+1,101,confirmada,2025-12-01
+4,101,confirmada,2025-12-05
+6,102,postulada,2026-01-20
+7,103,confirmada,2026-02-10
+1,104,postulada,2026-02-15
+4,105,rechazada,2026-02-20

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fight.net – Carga de Datos</title>
+<link rel="icon" type="image/x-icon" href="static/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #bc2218;
+    --primary-dark: #9e1c14;
+    --secondary: #161614;
+    --secondary-light: #2a2a28;
+    --bg: #F4F5F7;
+    --card: #FFFFFF;
+    --text: #161614;
+    --text-muted: #7F8C8D;
+    --border: #E0E0E0;
+    --success: #27AE60;
+    --warning: #F39C12;
+    --error: #bc2218;
+    --radius: 12px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg); 
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  nav {
+    background: var(--secondary); padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+  }
+  .nav-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .nav-title { color: white; font-weight: 700; font-size: 1.1rem; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link { color: rgba(255,255,255,0.75); text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+  .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.12); color: white; }
+
+  .page-header {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 50%, var(--primary) 100%);
+    padding: 3rem 2rem;
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .page-header h1 { 
+    font-size: 1.8rem; 
+    font-weight: 800; 
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .page-header p { 
+    color: rgba(255,255,255,0.8); 
+    font-size: 0.95rem;
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .container { 
+    max-width: 900px; 
+    margin: 0 auto; 
+    padding: 2rem 1.5rem;
+    flex: 1 0 auto;
+    width: 100%;
+  }
+
+  /* KPI SELECTOR */
+  .selector-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 2px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+  }
+  .selector-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+  }
+  .selector-label { 
+    font-size: 0.8rem; 
+    font-weight: 700; 
+    color: var(--primary); 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  select {
+    width: 100%; padding: 12px 16px;
+    border: 2px solid var(--border); border-radius: 10px;
+    font-family: 'Inter', sans-serif; font-size: 1rem; color: var(--text);
+    background: white; cursor: pointer; outline: none; transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23161614' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+    padding-right: 40px;
+  }
+  select:hover {
+    border-color: var(--primary);
+  }
+  select:focus { 
+    border-color: var(--primary); 
+    box-shadow: 0 0 0 3px rgba(188,34,24,0.1);
+  }
+
+  /* KPI INFO */
+  #kpi-info {
+    background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    color: white;
+    display: none;
+  }
+  #kpi-info h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  #kpi-info .info-row { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .info-chip {
+    background: rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    display: flex; align-items: center; gap: 5px;
+  }
+  #kpi-formula { font-size: 0.82rem; color: rgba(255,255,255,0.7); margin-top: 0.3rem; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* TABS */
+  .tabs { 
+    display: flex; 
+    gap: 4px; 
+    margin-bottom: 1.5rem; 
+    background: var(--card); 
+    border-radius: 12px; 
+    padding: 5px; 
+    border: 2px solid var(--border); 
+    width: fit-content;
+    box-shadow: var(--shadow);
+  }
+  .tab-btn {
+    padding: 10px 20px; 
+    border-radius: 8px; 
+    border: none;
+    background: none; 
+    font-family: 'Inter', sans-serif; 
+    font-size: 0.9rem;
+    font-weight: 600; 
+    color: var(--text-muted); 
+    cursor: pointer; 
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { 
+    background: rgba(188,34,24,0.05);
+    color: var(--primary);
+  }
+  .tab-btn.active { 
+    background: var(--primary); 
+    color: white;
+    box-shadow: 0 2px 8px rgba(188,34,24,0.3);
+  }
+
+  /* MANUAL ENTRY */
+  #tab-manual { display: block; }
+  #tab-csv { display: none; }
+  #tab-records { display: none; }
+
+  .form-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+  }
+  .form-card:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  }
+  .form-card-header {
+    background: linear-gradient(135deg, #F8F9FA 0%, #F0F2F5 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .form-card-header h4 { font-size: 0.95rem; font-weight: 700; color: var(--secondary); }
+  .form-card-body { padding: 1.5rem; }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-label {
+    font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .type-badge {
+    font-size: 0.68rem; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 5px; color: var(--text-muted);
+  }
+  input[type="text"], input[type="number"], input[type="date"] {
+    width: 100%; padding: 10px 14px;
+    border: 2px solid var(--border); border-radius: 9px;
+    font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--text);
+    outline: none; transition: all 0.2s;
+    background: white;
+  }
+  input[type="text"]:hover, input[type="number"]:hover, input[type="date"]:hover {
+    border-color: #ccc;
+  }
+  input:focus { 
+    border-color: var(--primary); 
+    box-shadow: 0 0 0 3px rgba(188,34,24,0.1);
+  }
+  input.error-field { border-color: var(--error); background: #FFF5F5; }
+
+  .form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* CSV SECTION */
+  .csv-drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 3rem 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+  }
+  .csv-drop-zone:hover, .csv-drop-zone.dragover { 
+    border-color: var(--primary); 
+    background: rgba(188,34,24,0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(188,34,24,0.1);
+  }
+  .drop-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .drop-title { font-weight: 700; font-size: 1.1rem; color: var(--secondary); margin-bottom: 0.5rem; }
+  .drop-sub { font-size: 0.9rem; color: var(--text-muted); }
+  #csv-file-input { display: none; }
+
+  .csv-actions { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+
+  .import-mode-row { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+  .radio-opt { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.88rem; }
+  input[type="radio"] { accent-color: var(--primary); }
+
+  /* RECORDS TABLE */
+  .records-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px; margin-bottom: 1rem;
+    background: var(--card);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .records-count { 
+    font-size: 0.9rem; 
+    color: var(--text-muted); 
+    font-weight: 500;
+  }
+  .records-count strong {
+    color: var(--primary);
+  }
+  .table-wrapper { 
+    overflow-x: auto; 
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    font-size: 0.9rem; 
+  }
+  th {
+    background: var(--secondary); 
+    color: white;
+    padding: 12px 16px; 
+    text-align: left; 
+    font-weight: 600;
+    font-size: 0.82rem; 
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  th:first-child { border-radius: var(--radius) 0 0 0; }
+  th:last-child { border-radius: 0 var(--radius) 0 0; }
+  td { 
+    padding: 12px 16px; 
+    border-bottom: 1px solid var(--border); 
+    color: var(--text); 
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:last-child td:first-child { border-radius: 0 0 0 var(--radius); }
+  tr:last-child td:last-child { border-radius: 0 0 var(--radius) 0; }
+  tr:hover td { background: rgba(188,34,24,0.04); }
+  td button { 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    color: var(--error); 
+    font-size: 1.2rem; 
+    padding: 4px;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+  td button:hover { 
+    transform: scale(1.1);
+    background: rgba(188,34,24,0.1);
+  }
+
+  .empty-state {
+    text-align: center; 
+    padding: 4rem 2rem;
+    color: var(--text-muted); 
+    font-size: 0.95rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 2px dashed var(--border);
+  }
+  .empty-icon { 
+    font-size: 3.5rem; 
+    margin-bottom: 1rem;
+    opacity: 0.7;
+  }
+  .empty-state p {
+    margin-top: 0.5rem;
+  }
+
+  /* VALIDATION MESSAGES */
+  #validation-msg {
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+    display: none;
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+  #validation-msg.success { background: #EAFAF1; border: 1px solid #27AE60; color: #1D6A39; display: block; }
+  #validation-msg.error { background: #FDEDEC; border: 1px solid var(--error); color: #922B21; display: block; }
+  #validation-msg.warning { background: #FEF9E7; border: 1px solid var(--warning); color: #7D6608; display: block; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: 10px; font-weight: 600;
+    font-size: 0.9rem; cursor: pointer; border: none; text-decoration: none;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-primary { 
+    background: var(--primary); 
+    color: white;
+    box-shadow: 0 2px 8px rgba(188,34,24,0.2);
+  }
+  .btn-primary:hover { 
+    background: var(--primary-dark); 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(188,34,24,0.3);
+  }
+  .btn-secondary { 
+    background: var(--secondary); 
+    color: white;
+  }
+  .btn-secondary:hover { 
+    background: var(--secondary-light); 
+    transform: translateY(-1px);
+  }
+  .btn-outline { 
+    background: transparent; 
+    border: 2px solid var(--border); 
+    color: var(--text);
+  }
+  .btn-outline:hover { 
+    border-color: var(--primary); 
+    color: var(--primary);
+    transform: translateY(-1px);
+  }
+  .btn-ghost { 
+    background: rgba(22,22,20,0.06); 
+    color: var(--secondary);
+  }
+  .btn-ghost:hover { 
+    background: rgba(22,22,20,0.1);
+    transform: translateY(-1px);
+  }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--error); color: white; }
+  .btn-sm { padding: 7px 14px; font-size: 0.85rem; }
+
+  #toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--secondary); color: white;
+    padding: 12px 20px; border-radius: 10px; font-size: 0.9rem;
+    font-weight: 500; opacity: 0; transform: translateY(20px);
+    transition: all 0.3s; z-index: 999; max-width: 320px;
+    pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.success { background: var(--success); }
+  #toast.error { background: var(--error); }
+
+  footer { 
+    background: var(--secondary); 
+    color: rgba(255,255,255,0.5); 
+    text-align: center; 
+    padding: 1.5rem; 
+    font-size: 0.8rem; 
+    flex-shrink: 0;
+    margin-top: auto;
+  }
+  .footer-brand { color: white; font-weight: 700; }
+  @media (max-width: 600px) { .nav-links { display: none; } .field-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">
+    <div class="nav-logo">
+      <img src="static/logo-32.png" alt="Fight.net Logo">
+    </div>
+    <span class="nav-title">Fight.net</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Inicio</a>
+    <a href="upload.html" class="nav-link active">Carga de Datos</a>
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>📤 Carga de Datos</h1>
+  <p>Ingresa datos manualmente o importa un CSV para alimentar tus KPIs</p>
+</div>
+
+<div class="container">
+
+  <!-- KPI SELECTOR -->
+  <div class="selector-card">
+    <div class="selector-label">
+      <span>📊</span>
+      <span>Selecciona el KPI a alimentar</span>
+    </div>
+    <select id="kpi-select" onchange="onKPISelect()">
+      <option value="">— Elige un KPI —</option>
+    </select>
+  </div>
+
+  <!-- KPI INFO BAR -->
+  <div id="kpi-info">
+    <h3 id="kpi-info-name">—</h3>
+    <div id="kpi-formula">—</div>
+    <div class="info-row">
+      <div class="info-chip">📋 <span id="kpi-info-table">—</span></div>
+      <div class="info-chip">📈 <span id="kpi-info-chart">—</span></div>
+      <div class="info-chip">🏷️ <span id="kpi-info-kr">—</span></div>
+    </div>
+  </div>
+
+  <!-- VALIDATION MSG -->
+  <div id="validation-msg"></div>
+
+  <!-- PLACEHOLDER -->
+  <div id="placeholder" class="empty-state">
+    <div class="empty-icon">⬆️</div>
+    <strong>Selecciona un KPI arriba</strong> para comenzar a ingresar datos.
+  </div>
+
+  <!-- MAIN PANEL (hidden until KPI selected) -->
+  <div id="main-panel" style="display:none">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('manual')">✏️ Manual</button>
+      <button class="tab-btn" onclick="switchTab('csv')">📂 CSV</button>
+      <button class="tab-btn" onclick="switchTab('records')">🗂️ Registros</button>
+    </div>
+
+    <!-- TAB: MANUAL -->
+    <div id="tab-manual">
+      <div class="form-card" id="manual-form-wrapper">
+        <!-- Dynamically rendered for each table -->
+      </div>
+    </div>
+
+    <!-- TAB: CSV -->
+    <div id="tab-csv">
+      <div class="form-card">
+        <div class="form-card-header">📂 <h4>Importar desde CSV</h4></div>
+        <div class="form-card-body">
+          <div class="csv-drop-zone" id="drop-zone" onclick="document.getElementById('csv-file-input').click()"
+            ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+            <div class="drop-icon">📁</div>
+            <div class="drop-title">Arrastra tu CSV aquí o haz clic para seleccionar</div>
+            <div class="drop-sub">Archivo .csv · Columnas según el esquema del KPI seleccionado</div>
+          </div>
+          <input type="file" id="csv-file-input" accept=".csv" onchange="onFileSelect(event)">
+          <div id="file-preview" style="margin-top:1rem; display:none;">
+            <strong>📄 Archivo:</strong> <span id="file-name">—</span>
+            <span id="file-rows" style="color:var(--text-muted); font-size:0.85rem; margin-left:8px;"></span>
+          </div>
+          <div class="import-mode-row">
+            <label class="radio-opt"><input type="radio" name="import-mode" value="append" checked> Agregar a datos existentes</label>
+            <label class="radio-opt"><input type="radio" name="import-mode" value="replace"> Reemplazar datos existentes</label>
+          </div>
+          <div class="csv-actions">
+            <button class="btn btn-primary" onclick="doImportCSV()">📥 Importar CSV</button>
+            <button class="btn btn-outline" onclick="downloadTemplate()">⬇️ Descargar Plantilla</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-header">📋 <h4>Formato Esperado</h4></div>
+        <div class="form-card-body">
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem;">
+            La primera fila debe ser el encabezado con exactamente estas columnas:
+          </div>
+          <div id="csv-schema-preview" style="background:#F8F9FA; border-radius:9px; padding:12px; font-family:monospace; font-size:0.85rem; overflow-x:auto; border:1px solid var(--border);"></div>
+          <div style="font-size:0.82rem; color:var(--text-muted); margin-top:0.75rem;">
+            💡 Fechas en formato <code style="background:#eee;padding:1px 5px;border-radius:4px;">YYYY-MM-DD</code>
+            · Números con punto decimal <code style="background:#eee;padding:1px 5px;border-radius:4px;">1500.50</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: RECORDS -->
+    <div id="tab-records">
+      <div class="form-card">
+        <div class="form-card-header">🗂️ <h4>Registros Guardados</h4></div>
+        <div class="form-card-body">
+          <div class="records-toolbar">
+            <span class="records-count" id="records-count">0 registros</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="exportCurrentTable()">⬆️ Exportar CSV</button>
+              <button class="btn btn-danger btn-sm" onclick="clearCurrentTable()">🗑️ Borrar tabla</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <div id="records-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-panel -->
+</div>
+
+<div id="toast"></div>
+<footer>
+  <div class="footer-brand">Fight.net Dashboard</div>
+  Aguascalientes · Deportes de Contacto · Sistema Portable Offline
+</footer>
+
+<script src="scripts/dataManager.js"></script>
+<script src="scripts/kpiEngine.js"></script>
+<script>
+  let currentKPI = null;
+  let currentTable = null;
+  let pendingCSVData = null;
+  let pendingCSVText = null;
+
+  // Populate KPI selector
+  function populateSelect() {
+    const sel = document.getElementById('kpi-select');
+    const krs = {};
+    KPIEngine.getAllKPIs().forEach(kpi => {
+      if (!krs[kpi.kr]) krs[kpi.kr] = [];
+      krs[kpi.kr].push(kpi);
+    });
+    Object.entries(krs).forEach(([kr, kpis]) => {
+      const grp = document.createElement('optgroup');
+      grp.label = kr;
+      kpis.forEach(kpi => {
+        const opt = document.createElement('option');
+        opt.value = kpi.id;
+        opt.textContent = kpi.name;
+        grp.appendChild(opt);
+      });
+      sel.appendChild(grp);
+    });
+  }
+
+  function onKPISelect() {
+    const id = document.getElementById('kpi-select').value;
+    hideMsg();
+    if (!id) {
+      document.getElementById('placeholder').style.display = 'block';
+      document.getElementById('main-panel').style.display = 'none';
+      document.getElementById('kpi-info').style.display = 'none';
+      currentKPI = null; return;
+    }
+    currentKPI = KPIEngine.getKPI(id);
+    // For multi-table KPIs, use first table with most columns
+    currentTable = currentKPI.tables[0];
+
+    // Update info bar
+    document.getElementById('kpi-info').style.display = 'block';
+    document.getElementById('kpi-info-name').textContent = currentKPI.name;
+    document.getElementById('kpi-formula').textContent = '📐 Fórmula: ' + currentKPI.formula;
+    document.getElementById('kpi-info-table').textContent = currentKPI.tables.join(', ');
+    document.getElementById('kpi-info-chart').textContent = currentKPI.chart_type;
+    document.getElementById('kpi-info-kr').textContent = currentKPI.kr;
+
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('main-panel').style.display = 'block';
+
+    buildManualForm();
+    buildCSVSchemaPreview();
+    loadRecords();
+  }
+
+  function buildManualForm() {
+    const wrapper = document.getElementById('manual-form-wrapper');
+    wrapper.innerHTML = '';
+
+    currentKPI.tables.forEach(tableName => {
+      const schema = currentKPI.schema[tableName];
+      if (!schema) return;
+
+      const header = document.createElement('div');
+      header.className = 'form-card-header';
+      header.innerHTML = `✏️ <h4>Nueva fila en: <code style="font-size:0.88rem;background:rgba(188,34,24,0.1);color:var(--primary);padding:2px 7px;border-radius:5px;">${tableName}</code></h4>`;
+
+      const body = document.createElement('div');
+      body.className = 'form-card-body';
+
+      const grid = document.createElement('div');
+      grid.className = 'field-grid';
+
+      schema.forEach(col => {
+        const group = document.createElement('div');
+        group.className = 'field-group';
+
+        const label = document.createElement('div');
+        label.className = 'field-label';
+        label.innerHTML = `${col.name} <span class="type-badge">${col.type}</span>`;
+
+        const input = document.createElement('input');
+        input.id = `field-${tableName}-${col.name}`;
+        input.placeholder = col.type === 'date' ? 'YYYY-MM-DD' : col.type === 'number' ? '0' : 'texto';
+        input.type = col.type === 'number' ? 'number' : col.type === 'date' ? 'date' : 'text';
+        input.setAttribute('data-table', tableName);
+        input.setAttribute('data-col', col.name);
+
+        group.appendChild(label);
+        group.appendChild(input);
+        grid.appendChild(group);
+      });
+
+      const actions = document.createElement('div');
+      actions.className = 'form-actions';
+      actions.innerHTML = `
+        <button class="btn btn-primary" onclick="saveManualRow('${tableName}')">💾 Guardar fila</button>
+        <button class="btn btn-ghost" onclick="clearFields('${tableName}')">🔄 Limpiar</button>
+      `;
+
+      body.appendChild(grid);
+      body.appendChild(actions);
+      wrapper.appendChild(header);
+      wrapper.appendChild(body);
+    });
+  }
+
+  function saveManualRow(tableName) {
+    const schema = currentKPI.schema[tableName];
+    const row = {};
+    schema.forEach(col => {
+      const input = document.getElementById(`field-${tableName}-${col.name}`);
+      if (input) row[col.name] = input.value;
+      if (input) input.classList.remove('error-field');
+    });
+
+    const errors = DataManager.validateRow(row, schema);
+    if (errors.length > 0) {
+      // Highlight error fields
+      errors.forEach(e => {
+        const match = e.match(/campo requerido faltante: "(.+)"/i) || e.match(/"(.+)" debe/i);
+        if (match) {
+          const inp = document.getElementById(`field-${tableName}-${match[1]}`);
+          if (inp) inp.classList.add('error-field');
+        }
+      });
+      showMsg('❌ Errores en el formulario:\n' + errors.join('\n'), 'error');
+      return;
+    }
+
+    DataManager.appendRows(tableName, [row]);
+    clearFields(tableName);
+    hideMsg();
+    showToast('✅ Fila guardada correctamente', 'success');
+    if (document.querySelector('.tab-btn:nth-child(3)').classList.contains('active')) loadRecords();
+  }
+
+  function clearFields(tableName) {
+    const schema = currentKPI.schema[tableName];
+    schema.forEach(col => {
+      const input = document.getElementById(`field-${tableName}-${col.name}`);
+      if (input) { input.value = ''; input.classList.remove('error-field'); }
+    });
+  }
+
+  function buildCSVSchemaPreview() {
+    const container = document.getElementById('csv-schema-preview');
+    // Show schema for first table (main)
+    const schema = currentKPI.schema[currentTable];
+    if (!schema) { container.textContent = '—'; return; }
+    const headers = schema.map(c => c.name).join(',');
+    const example = schema.map(c => {
+      if (c.type === 'date') return '2025-03-15';
+      if (c.type === 'number') return '100';
+      return 'ejemplo';
+    }).join(',');
+    container.innerHTML = `<strong>${headers}</strong>\n${example}`;
+  }
+
+  function onDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('dragover'); }
+  function onDragLeave(e) { document.getElementById('drop-zone').classList.remove('dragover'); }
+  function onDrop(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) processCSVFile(file);
+  }
+  function onFileSelect(e) { if (e.target.files[0]) processCSVFile(e.target.files[0]); }
+
+  function processCSVFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      pendingCSVText = e.target.result;
+      const { rows } = DataManager.parseCSV(pendingCSVText);
+      document.getElementById('file-preview').style.display = 'block';
+      document.getElementById('file-name').textContent = file.name;
+      document.getElementById('file-rows').textContent = `(${rows.length} filas detectadas)`;
+      showMsg(`📄 Archivo "${file.name}" listo. Haz clic en "Importar CSV" para continuar.`, 'warning');
+    };
+    reader.readAsText(file);
+  }
+
+  function doImportCSV() {
+    if (!pendingCSVText) { showMsg('⚠️ Selecciona un archivo CSV primero.', 'error'); return; }
+    const schema = currentKPI.schema[currentTable];
+    const mode = document.querySelector('input[name="import-mode"]:checked').value;
+    const result = DataManager.importCSV(currentTable, pendingCSVText, schema, mode);
+    if (result.success) {
+      showMsg(`✅ ${result.message}`, 'success');
+      showToast(`✅ ${result.imported} filas importadas`, 'success');
+      pendingCSVText = null;
+      document.getElementById('file-preview').style.display = 'none';
+      document.getElementById('csv-file-input').value = '';
+    } else {
+      showMsg(`❌ ${result.message}`, 'error');
+    }
+    loadRecords();
+  }
+
+  function downloadTemplate() {
+    if (!currentKPI) return;
+    const schema = currentKPI.schema[currentTable];
+    DataManager.downloadTemplate(schema, `plantilla_${currentTable}.csv`);
+  }
+
+  function exportCurrentTable() {
+    if (!currentKPI) return;
+    const schema = currentKPI.schema[currentTable];
+    const csv = DataManager.exportCSV(currentTable, schema);
+    if (!csv) { showMsg('⚠️ No hay datos para exportar.', 'warning'); return; }
+    DataManager.downloadCSV(csv, `${currentTable}_export.csv`);
+    showToast('✅ CSV exportado', 'success');
+  }
+
+  function clearCurrentTable() {
+    if (!currentKPI) return;
+    const n = DataManager.loadTable(currentTable).length;
+    if (n === 0) { showMsg('⚠️ La tabla ya está vacía.', 'warning'); return; }
+    if (!confirm(`¿Eliminar los ${n} registros de la tabla "${currentTable}"?`)) return;
+    DataManager.clearTable(currentTable);
+    loadRecords();
+    showToast('🗑️ Tabla limpiada', '');
+  }
+
+  function loadRecords() {
+    const rows = DataManager.loadTable(currentTable);
+    const schema = currentKPI.schema[currentTable];
+    const container = document.getElementById('records-container');
+    document.getElementById('records-count').textContent = `${rows.length} registro${rows.length !== 1 ? 's' : ''}`;
+
+    if (rows.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>Sin registros en esta tabla.</div>`;
+      return;
+    }
+    const cols = schema.map(c => c.name);
+    let html = `<table><thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}<th>—</th></tr></thead><tbody>`;
+    rows.forEach((row, idx) => {
+      html += `<tr>${cols.map(c => `<td>${row[c] || '—'}</td>`).join('')}<td><button onclick="deleteRow(${idx})" title="Eliminar">🗑️</button></td></tr>`;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function deleteRow(idx) {
+    const rows = DataManager.loadTable(currentTable);
+    rows.splice(idx, 1);
+    DataManager.saveTable(currentTable, rows);
+    loadRecords();
+    showToast('🗑️ Fila eliminada', '');
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      const tabs = ['manual', 'csv', 'records'];
+      b.classList.toggle('active', tabs[i] === tab);
+    });
+    document.getElementById('tab-manual').style.display = tab === 'manual' ? 'block' : 'none';
+    document.getElementById('tab-csv').style.display = tab === 'csv' ? 'block' : 'none';
+    document.getElementById('tab-records').style.display = tab === 'records' ? 'block' : 'none';
+    if (tab === 'records') loadRecords();
+  }
+
+  function showMsg(text, type) {
+    const el = document.getElementById('validation-msg');
+    el.textContent = text;
+    el.className = type;
+  }
+  function hideMsg() { const el = document.getElementById('validation-msg'); el.className = ''; el.textContent = ''; }
+
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'show ' + type;
+    setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  populateSelect();
+</script>
+</body>
+</html>

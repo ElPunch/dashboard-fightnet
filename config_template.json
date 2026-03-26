@@ -1,0 +1,31 @@
+{
+  "___instructions___": "Este archivo es la plantilla de configuración del dashboard Fight.net. Reemplaza los valores entre <> con tu información real.",
+  "business": {
+    "name": "<Nombre de tu organización>",
+    "colors": ["<#HEX_COLOR_PRIMARIO>", "<#HEX_COLOR_SECUNDARIO>"],
+    "style": "<modern | classic | minimal | corporate>"
+  },
+  "objective": "<Describe el objetivo principal que quieres alcanzar en el período>",
+  "period_months": "<número de meses del período, ej: 6>",
+  "KRs": [
+    {
+      "name": "<Nombre del Key Result 1>",
+      "KPIs": [
+        {
+          "name": "<Nombre del KPI>",
+          "formula": "<Descripción de la fórmula de cálculo>",
+          "chart_type": "<line | bar | pie | doughnut | radar>",
+          "data_sources": [
+            {
+              "table": "<nombre_tabla>",
+              "columns": [
+                {"name": "<columna1>", "type": "<number | string | date>"},
+                {"name": "<columna2>", "type": "<number | string | date>"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

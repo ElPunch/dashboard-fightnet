@@ -1,0 +1,5 @@
+id,concepto,tipo,monto,fecha_actualizacion
+1,efectivo_disponible,efectivo,150000,2026-02-28
+2,burn_rate,gasto,40000,2026-02-28
+3,ingresos_mensuales,ingreso,120000,2026-02-28
+4,gastos_mensuales,gasto,90000,2026-02-28

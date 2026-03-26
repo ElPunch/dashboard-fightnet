@@ -1,0 +1,8 @@
+id_evento,fecha_publicacion,fecha_verificacion,estatus
+1,2025-11-20,2025-11-22,Verificado
+2,2025-12-05,,Pendiente
+3,2025-12-14,2025-12-15,Verificado
+4,2026-01-10,2026-01-12,Verificado
+5,2026-01-22,,Rechazado
+6,2026-02-10,2026-02-12,Verificado
+7,2026-02-20,,Enviado

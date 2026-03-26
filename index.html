@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fight.net – Dashboard de KPIs</title>
+<link rel="icon" type="image/x-icon" href="static/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #bc2218;
+    --primary-dark: #9e1c14;
+    --secondary: #161614;
+    --secondary-light: #2a2a28;
+    --bg: #F4F5F7;
+    --card: #FFFFFF;
+    --text: #161614;
+    --text-muted: #7F8C8D;
+    --border: #E0E0E0;
+    --success: #27AE60;
+    --warning: #F39C12;
+    --radius: 14px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--secondary);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .nav-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+  }
+  .nav-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .nav-title { color: white; font-weight: 700; font-size: 1.1rem; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link {
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .nav-link:hover, .nav-link.active {
+    background: rgba(255,255,255,0.12);
+    color: white;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 50%, var(--primary) 100%);
+    padding: 4rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    color: white;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    margin-bottom: 1rem;
+    line-height: 1.1;
+  }
+  .hero h1 span { color: var(--primary); text-shadow: 0 0 30px rgba(188,34,24,0.5); }
+  .hero p {
+    color: rgba(255,255,255,0.8);
+    font-size: 1.05rem;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2.5rem;
+  }
+  .hero-stat {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    min-width: 120px;
+  }
+  .hero-stat-num { color: white; font-size: 1.8rem; font-weight: 800; }
+  .hero-stat-label { color: rgba(255,255,255,0.6); font-size: 0.75rem; margin-top: 2px; }
+
+  /* MAIN CONTENT */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* TUTORIAL MODAL OVERLAY */
+  #tutorial-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+  #tutorial-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* TUTORIAL MODAL */
+  #tutorial-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow: hidden;
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+  #tutorial-modal.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .tutorial-modal-header {
+    background: var(--secondary);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .tutorial-modal-header-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+  }
+  .tutorial-modal-header h3 { 
+    color: white; 
+    font-size: 0.95rem; 
+    font-weight: 600; 
+  }
+  .tutorial-close-btn {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .tutorial-close-btn:hover {
+    background: rgba(255,255,255,0.2);
+  }
+  .tutorial-progress-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+  }
+  .tutorial-progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.4s ease;
+  }
+  .tutorial-modal-body { 
+    padding: 2rem; 
+    overflow-y: auto;
+    max-height: calc(85vh - 140px);
+  }
+  .tutorial-icon { 
+    font-size: 3.5rem; 
+    display: block; 
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  #tutorial-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  #tutorial-content {
+    color: var(--text-muted);
+    line-height: 1.7;
+    font-size: 0.95rem;
+  }
+  #tutorial-content strong { color: var(--text); }
+  .step-list { display: flex; flex-direction: column; gap: 8px; margin: 0.5rem 0; }
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .step-badge {
+    background: var(--primary);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .example-box {
+    background: #F8F9FA;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    margin: 0.5rem 0;
+  }
+  .example-box code {
+    background: var(--secondary);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85rem;
+  }
+  .tutorial-modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: var(--bg);
+  }
+  .dots { display: flex; gap: 8px; align-items: center; }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .dot:hover { background: var(--primary); opacity: 0.5; }
+  .dot.active { background: var(--primary); transform: scale(1.2); }
+  .tutorial-nav { display: flex; gap: 10px; align-items: center; }
+  #tutorial-counter { 
+    color: var(--text-muted); 
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-right: 10px;
+  }
+
+  /* TOUR TRIGGER BUTTON */
+  .tour-trigger-section {
+    text-align: center;
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.6s ease;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .tour-trigger-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(188,34,24,0.3);
+  }
+  .tour-trigger-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(188,34,24,0.4);
+  }
+  .tour-trigger-btn:active {
+    transform: translateY(0);
+  }
+
+  /* RESTART TOUR LINK */
+  #restart-tour-link {
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(188,34,24,0.3); }
+  .btn-secondary { background: var(--secondary); color: white; }
+  .btn-secondary:hover { background: var(--secondary-light); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--border);
+    color: var(--text);
+  }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-ghost { background: rgba(22,22,20,0.07); color: var(--secondary); }
+  .btn-ghost:hover { background: rgba(22,22,20,0.12); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: #219A52; }
+  .btn-danger { background: #bc2218; color: white; }
+  .btn-danger:hover { background: #9e1c14; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+
+  /* ACTION BUTTONS */
+  #action-buttons {
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .action-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .action-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow); }
+  .action-card.primary-action { border-color: var(--primary); background: linear-gradient(135deg, #fff 60%, rgba(188,34,24,0.04)); }
+  .action-icon { font-size: 2.5rem; }
+  .action-label { font-weight: 700; font-size: 1rem; color: var(--secondary); }
+  .action-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* KR OVERVIEW */
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .kr-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+    border-left: 4px solid var(--primary);
+    box-shadow: var(--shadow);
+  }
+  .kr-number { font-size: 0.75rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kr-name { font-size: 0.95rem; font-weight: 700; color: var(--secondary); margin: 4px 0; }
+  .kr-kpis { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--secondary);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    z-index: 999;
+    max-width: 320px;
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.success { background: var(--success); }
+  #toast.error { background: var(--primary); }
+
+  /* FOOTER */
+  footer {
+    background: var(--secondary);
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.8rem;
+    margin-top: 3rem;
+  }
+  .footer-brand { color: white; font-weight: 700; }
+
+  @media (max-width: 600px) {
+    .hero { padding: 2.5rem 1rem 3rem; }
+    .nav-links { display: none; }
+    .hero-stats { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="index.html">
+    <div class="nav-logo">
+      <img src="static/logo-32.png" alt="Fight.net Logo">
+    </div>
+    <span class="nav-title">Fight.net</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link active">Inicio</a>
+    <a href="upload.html" class="nav-link">Carga de Datos</a>
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🏆 Aguascalientes · Deportes de Contacto</div>
+  <h1>Dashboard de KPIs<br><span>Fight.net</span></h1>
+  <p>Monitorea el impacto, crecimiento y sostenibilidad de Fight.net en tiempo real — sin internet, sin instalaciones.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">4</div>
+      <div class="hero-stat-label">Key Results</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">9</div>
+      <div class="hero-stat-label">KPIs activos</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">6m</div>
+      <div class="hero-stat-label">Horizonte</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">100%</div>
+      <div class="hero-stat-label">Offline</div>
+    </div>
+  </div>
+</div>
+
+<!-- TUTORIAL MODAL OVERLAY -->
+<div id="tutorial-overlay"></div>
+
+<!-- TUTORIAL MODAL -->
+<div id="tutorial-modal">
+  <div class="tutorial-modal-header">
+    <div class="tutorial-modal-header-left">
+      <span style="font-size:1.2rem">📚</span>
+      <h3>Guía de Inicio</h3>
+    </div>
+    <button class="tutorial-close-btn" onclick="Tutorial.close()">✕</button>
+  </div>
+  <div class="tutorial-progress-bar">
+    <div class="tutorial-progress-fill" id="tutorial-progress" style="width:16%"></div>
+  </div>
+  <div class="tutorial-modal-body">
+    <span class="tutorial-icon" id="tutorial-icon"></span>
+    <div id="tutorial-title"></div>
+    <div id="tutorial-content"></div>
+  </div>
+  <div class="tutorial-modal-footer">
+    <div class="dots" id="tutorial-dots"></div>
+    <div class="tutorial-nav">
+      <span id="tutorial-counter"></span>
+      <button class="btn btn-ghost btn-sm" id="tutorial-prev" onclick="Tutorial.prev()">← Anterior</button>
+      <button class="btn btn-primary btn-sm" id="tutorial-next" onclick="Tutorial.next()">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- TOUR TRIGGER BUTTON -->
+  <div class="tour-trigger-section" id="tour-trigger">
+    <button class="tour-trigger-btn" onclick="Tutorial.start()">
+      <span>🚀</span>
+      <span>Iniciar Tour Guiado</span>
+    </button>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.75rem;">
+      Conoce Fight.net en 6 pasos rápidos
+    </p>
+  </div>
+
+  <!-- RESTART TOUR LINK (shown after first visit) -->
+  <div id="restart-tour-link" style="text-align: center; margin-bottom: 1.5rem; display: none;">
+    <button class="btn btn-ghost btn-sm" onclick="Tutorial.restart()">
+      📚 Ver tour guiado de nuevo
+    </button>
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div id="action-buttons">
+    <p class="section-title">🚀 ¿Qué deseas hacer?</p>
+    <div class="action-grid">
+      <a href="upload.html" class="action-card primary-action">
+        <div class="action-icon">📤</div>
+        <div class="action-label">Cargar Datos</div>
+        <div class="action-desc">Ingresa o importa datos CSV para tus KPIs</div>
+      </a>
+      <a href="dashboard.html" class="action-card">
+        <div class="action-icon">📊</div>
+        <div class="action-label">Ver Dashboard</div>
+        <div class="action-desc">Visualiza gráficas y métricas en tiempo real</div>
+      </a>
+      <div class="action-card" onclick="loadExample()">
+        <div class="action-icon">🎯</div>
+        <div class="action-label">Datos de Ejemplo</div>
+        <div class="action-desc">Carga datos ficticios y explora el dashboard</div>
+      </div>
+      <div class="action-card" onclick="confirmReset()">
+        <div class="action-icon">🗑️</div>
+        <div class="action-label">Borrar Todo</div>
+        <div class="action-desc">Elimina todos los datos guardados</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:0.5rem;">
+      <button class="btn btn-ghost btn-sm" onclick="Tutorial.restart()">↩ Ver tutorial de nuevo</button>
+    </div>
+  </div>
+
+  <!-- KR OVERVIEW -->
+  <p class="section-title">📋 Key Results del Período (6 meses)</p>
+  <div class="kr-grid">
+    <div class="kr-card">
+      <div class="kr-number">KR 1</div>
+      <div class="kr-name">Sostenibilidad Financiera</div>
+      <div class="kr-kpis">2 KPIs: Ingresos · Promotores</div>
+    </div>
+    <div class="kr-card">
+      <div class="kr-number">KR 2</div>
+      <div class="kr-name">Procesos Operativos</div>
+      <div class="kr-kpis">3 KPIs: Eventos · Matches · Recurrencia</div>
+    </div>
+    <div class="kr-card">
+      <div class="kr-number">KR 3</div>
+      <div class="kr-name">Capital Humano</div>
+      <div class="kr-kpis">2 KPIs: Usuarios · Peleadores</div>
+    </div>
+    <div class="kr-card">
+      <div class="kr-number">KR 4</div>
+      <div class="kr-name">Impacto Social ADN</div>
+      <div class="kr-kpis">2 KPIs: Incidentes · Horas</div>
+    </div>
+  </div>
+
+  <p style="text-align:center; color:var(--text-muted); font-size:0.85rem; margin-top:1rem;">
+    Objetivo: Consolidar Fight.net como plataforma funcional, sostenible y de impacto social<br>
+    para el ecosistema de deportes de contacto en Aguascalientes en 6 meses.
+  </p>
+</div>
+
+<div id="toast"></div>
+
+<footer>
+  <div class="footer-brand">Fight.net Dashboard</div>
+  Aguascalientes · Deportes de Contacto · Sistema Portable Offline
+</footer>
+
+<script src="scripts/dataManager.js"></script>
+<script src="scripts/tutorial.js"></script>
+<script>
+  Tutorial.init();
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show ' + type;
+    setTimeout(() => { t.className = ''; }, 3500);
+  }
+
+  function loadExample() {
+    DataManager.loadExampleData();
+    showToast('✅ Datos de ejemplo cargados. ¡Ve al Dashboard!', 'success');
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+  }
+
+  function confirmReset() {
+    if (confirm('¿Borrar TODOS los datos guardados? Esta acción no se puede deshacer.')) {
+      DataManager.clearAll();
+      showToast('🗑️ Todos los datos han sido eliminados.', 'error');
+    }
+  }
+
+  // Check if it's first visit
+  const tutorialDone = localStorage.getItem('fightnet_tutorial_done');
+  const tourTrigger = document.getElementById('tour-trigger');
+  const restartLink = document.getElementById('restart-tour-link');
+  
+  if (!tutorialDone) {
+    // First visit - start tour automatically after short delay
+    setTimeout(() => {
+      Tutorial.start();
+    }, 500);
+  } else {
+    // Show restart link instead of big button
+    if (tourTrigger) tourTrigger.style.display = 'none';
+    if (restartLink) restartLink.style.display = 'block';
+  }
+</script>
+</body>
+</html>

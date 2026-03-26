@@ -1,0 +1,17 @@
+id_gasto,concepto,categoria,monto,fecha
+1,Servidores y hosting,operativo,15000,2025-11-01
+2,Servidores y hosting,operativo,15000,2025-12-01
+3,Servidores y hosting,operativo,15000,2026-01-01
+4,Servidores y hosting,operativo,15000,2026-02-01
+5,Marketing digital,marketing,10000,2025-11-15
+6,Marketing digital,marketing,12000,2025-12-15
+7,Marketing digital,marketing,10000,2026-01-15
+8,Marketing digital,marketing,8000,2026-02-15
+9,Nómina desarrolladores,desarrollo,25000,2025-11-30
+10,Nómina desarrolladores,desarrollo,25000,2025-12-31
+11,Nómina desarrolladores,desarrollo,25000,2026-01-31
+12,Nómina desarrolladores,desarrollo,25000,2026-02-28
+13,Servicios.cloud,servicios,3000,2025-11-01
+14,Servicios.cloud,servicios,3000,2025-12-01
+15,Servicios.cloud,servicios,3500,2026-01-01
+16,Servicios.cloud,servicios,3500,2026-02-01

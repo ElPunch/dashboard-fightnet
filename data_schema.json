@@ -1,0 +1,130 @@
+{
+  "version": "2.1",
+  "project": "Fight.net Dashboard",
+  "description": "Esquema de datos basado en project.md - 6 Key Results, 21 KPIs",
+  "objective": "Consolidar Fight.net como una plataforma funcional, confiable y reconocida que formalice el ecosistema del combate",
+  "key_results": [
+    {
+      "kr": "KR1",
+      "name": "Crecimiento de Usuarios",
+      "target": "200 usuarios activos en 6 meses",
+      "kpis": ["usuarios_activos_registrados", "tasa_crecimiento_mensual", "tasa_conversion_registros"]
+    },
+    {
+      "kr": "KR2", 
+      "name": "Eventos Verificados",
+      "target": "30 eventos verificados en 6 meses",
+      "kpis": ["eventos_verificados", "tiempo_promedio_verificacion", "porcentaje_eventos_aprobados"]
+    },
+    {
+      "kr": "KR3",
+      "name": "Emparejamientos Confirmados", 
+      "target": "40 emparejamientos en 6 meses",
+      "kpis": ["emparejamientos_confirmados", "tasa_cierre_emparejamientos", "tiempo_promedio_cierre_match"]
+    },
+    {
+      "kr": "KR4",
+      "name": "Participación de Peleadores",
+      "target": "60% de peleadores activos participando",
+      "kpis": ["porcentaje_peleadores_participacion", "postulaciones_promedio_por_peleador", "tasa_conversion_postulacion"]
+    },
+    {
+      "kr": "KR5",
+      "name": "Usuarios Recurrentes",
+      "target": "50% de usuarios con 2+ accesos mensuales",
+      "kpis": ["tasa_usuarios_recurrentes", "frecuencia_promedio_uso", "tasa_retencion_mensual"]
+    },
+    {
+      "kr": "KR6",
+      "name": "Rentabilidad y Finanzas",
+      "target": "Runway ≥6 meses y Margen ≥20%",
+      "kpis": ["ingresos_eventos_verificados", "ingresos_participacion_peleadores", "valor_usuario_recurrente", "runway", "margen_utilidad_neta", "ingresos_totales"]
+    }
+  ],
+  "tables": {
+    "usuarios": {
+      "description": "Usuarios registrados en la plataforma",
+      "kpis": ["usuarios_activos_registrados", "tasa_crecimiento_mensual", "tasa_conversion_registros", "porcentaje_peleadores_participacion"],
+      "columns": [
+        { "name": "id_usuario", "type": "number", "description": "Identificador único del usuario", "required": true },
+        { "name": "perfil_completo", "type": "string", "description": "Indica si el perfil está completo: true o false", "required": true },
+        { "name": "ultima_actividad", "type": "date", "description": "Última fecha de actividad (YYYY-MM-DD)", "required": true },
+        { "name": "rol", "type": "string", "description": "Rol del usuario: peleador, promotor, admin", "required": true },
+        { "name": "fecha_registro", "type": "date", "description": "Fecha de registro inicial (YYYY-MM-DD)", "required": true }
+      ]
+    },
+    "eventos": {
+      "description": "Eventos publicados en la plataforma",
+      "kpis": ["eventos_verificados", "tiempo_promedio_verificacion", "porcentaje_eventos_aprobados"],
+      "columns": [
+        { "name": "id_evento", "type": "number", "description": "Identificador único del evento", "required": true },
+        { "name": "fecha_publicacion", "type": "date", "description": "Fecha de publicación (YYYY-MM-DD)", "required": true },
+        { "name": "fecha_verificacion", "type": "date", "description": "Fecha de verificación (YYYY-MM-DD)", "required": false },
+        { "name": "estatus", "type": "string", "description": "Estado: Verificado, Pendiente, Rechazado, Enviado", "required": true }
+      ]
+    },
+    "matches": {
+      "description": "Emparejamientos entre peleadores y promotores",
+      "kpis": ["emparejamientos_confirmados", "tasa_cierre_emparejamientos", "tiempo_promedio_cierre_match"],
+      "columns": [
+        { "name": "id_match", "type": "number", "description": "Identificador único del match", "required": true },
+        { "name": "id_peleador", "type": "number", "description": "ID del peleador", "required": true },
+        { "name": "id_promotor", "type": "number", "description": "ID del promotor", "required": true },
+        { "name": "estatus", "type": "string", "description": "Estado: Confirmado por ambas partes, Pendiente, Cancelado", "required": true },
+        { "name": "fecha_solicitud", "type": "date", "description": "Fecha de solicitud inicial (YYYY-MM-DD)", "required": true },
+        { "name": "fecha_confirmacion", "type": "date", "description": "Fecha de confirmación (YYYY-MM-DD)", "required": false }
+      ]
+    },
+    "postulaciones": {
+      "description": "Postulaciones de peleadores a oportunidades",
+      "kpis": ["porcentaje_peleadores_participacion", "postulaciones_promedio_por_peleador", "tasa_conversion_postulacion"],
+      "columns": [
+        { "name": "id_peleador", "type": "number", "description": "ID del peleador que se postula", "required": true },
+        { "name": "id_oportunidad", "type": "number", "description": "ID de la oportunidad o evento", "required": true },
+        { "name": "estatus", "type": "string", "description": "Estado: postulada, confirmada, rechazada", "required": true },
+        { "name": "fecha_postulacion", "type": "date", "description": "Fecha de postulación (YYYY-MM-DD)", "required": true }
+      ]
+    },
+    "accesos_usuario": {
+      "description": "Registro de accesos mensuales por usuario",
+      "kpis": ["tasa_usuarios_recurrentes", "frecuencia_promedio_uso", "tasa_retencion_mensual"],
+      "columns": [
+        { "name": "id_usuario", "type": "number", "description": "Identificador único del usuario", "required": true },
+        { "name": "mes", "type": "date", "description": "Primer día del mes (YYYY-MM-01)", "required": true },
+        { "name": "total_accesos", "type": "number", "description": "Número de accesos en el mes", "required": true }
+      ]
+    },
+    "ingresos": {
+      "description": "Registro de ingresos financieros de la plataforma",
+      "kpis": ["ingresos_eventos_verificados", "ingresos_participacion_peleadores", "valor_usuario_recurrente", "ingresos_totales"],
+      "columns": [
+        { "name": "id_ingreso", "type": "number", "description": "Identificador único del ingreso", "required": true },
+        { "name": "tipo", "type": "string", "description": "Tipo: evento, postulacion, usuario", "required": true },
+        { "name": "monto", "type": "number", "description": "Monto en MXN", "required": true },
+        { "name": "fecha", "type": "date", "description": "Fecha del ingreso (YYYY-MM-DD)", "required": true }
+      ]
+    },
+    "gastos": {
+      "description": "Registro de gastos operativos de la plataforma",
+      "kpis": ["runway", "margen_utilidad_neta"],
+      "columns": [
+        { "name": "id_gasto", "type": "number", "description": "Identificador único del gasto", "required": true },
+        { "name": "concepto", "type": "string", "description": "Concepto del gasto: servidor, marketing, nómina, etc.", "required": true },
+        { "name": "categoria", "type": "string", "description": "Categoría: operativo, marketing, desarrollo, servicios", "required": true },
+        { "name": "monto", "type": "number", "description": "Monto en MXN", "required": true },
+        { "name": "fecha", "type": "date", "description": "Fecha del gasto (YYYY-MM-DD)", "required": true }
+      ]
+    },
+    "financials": {
+      "description": "Indicadores financieros clave",
+      "kpis": ["runway", "margen_utilidad_neta"],
+      "columns": [
+        { "name": "id", "type": "number", "description": "Identificador único", "required": true },
+        { "name": "concepto", "type": "string", "description": "Concepto: efectivo_disponible, burn_rate, ingresos_mensuales, gastos_mensuales", "required": true },
+        { "name": "tipo", "type": "string", "description": "Tipo: efectivo, gasto, ingreso", "required": true },
+        { "name": "monto", "type": "number", "description": "Monto en MXN", "required": true },
+        { "name": "fecha_actualizacion", "type": "date", "description": "Fecha de última actualización", "required": true }
+      ]
+    }
+  }
+}
