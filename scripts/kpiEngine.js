@@ -1116,6 +1116,133 @@ const KPIEngine = (() => {
     };
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // KR7 - CAPITAL HUMANO
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * KR7 - KPI1: Índice de Bienestar del Equipo
+   * Promedio de respuestas positivas en escala 1-5 de encuesta de clima laboral semanal
+   * Semáforo: Verde ≥4.2, Amarillo 3.5-4.1, Rojo <3.5
+   */
+  function calcIndiceBienestarEquipo(data) {
+    const bienestar = data.bienestar_equipo || [];
+    if (bienestar.length === 0) return { labels: [], values: [], summary: 'Sin datos', total: 0 };
+
+    const byMonth = {};
+    bienestar.forEach(row => {
+      const month = row.fecha ? getMonth(row.fecha) : 'Sin fecha';
+      if (!byMonth[month]) byMonth[month] = { total: 0, count: 0 };
+      byMonth[month].total += safeNum(row.puntuacion);
+      byMonth[month].count += 1;
+    });
+
+    const sorted = Object.keys(byMonth).sort();
+    const labels = sorted;
+    const values = sorted.map(m => {
+      const { total, count } = byMonth[m];
+      return count > 0 ? parseFloat((total / count).toFixed(2)) : 0;
+    });
+
+    const lastValue = values[values.length - 1] || 0;
+    const status = lastValue >= 4.2 ? 'success' : (lastValue >= 3.5 ? 'warning' : 'danger');
+
+    return {
+      labels,
+      values,
+      summary: `Índice de bienestar: ${fmt(lastValue, 2)}/5.0 (meta: ≥4.2)`,
+      total: lastValue,
+      unit: 'puntos',
+      status: status,
+      alert: status === 'danger' ? '⚠️ BIENESTAR CRÍTICO: Equipo en riesgo de burnout' :
+             status === 'warning' ? '⚠️ ALERTA: Bienestar del equipo requiere atención' : null
+    };
+  }
+
+  /**
+   * KR7 - KPI2: Velocidad de Aprendizaje del Equipo
+   * Número de nuevas habilidades implementadas por semana
+   * Semáforo: Verde ≥3, Amarillo 1-2, Rojo 0
+   */
+  function calcVelocidadAprendizaje(data) {
+    const aprendizaje = data.aprendizaje_equipo || [];
+    if (aprendizaje.length === 0) return { labels: [], values: [], summary: 'Sin datos', total: 0 };
+
+    const byMonth = {};
+    aprendizaje.forEach(row => {
+      const month = row.fecha ? getMonth(row.fecha) : 'Sin fecha';
+      if (!byMonth[month]) byMonth[month] = 0;
+      byMonth[month] += 1;
+    });
+
+    const sorted = Object.keys(byMonth).sort();
+    const labels = sorted;
+    const values = sorted.map(m => byMonth[m]);
+
+    const total = values.reduce((a, b) => a + b, 0);
+    const avg = values.length > 0 ? parseFloat((total / values.length).toFixed(1)) : 0;
+    const status = avg >= 3 ? 'success' : (avg >= 1 ? 'warning' : 'danger');
+
+    return {
+      labels,
+      values,
+      summary: `Aprendizajes implementados: ${total} (promedio: ${avg}/semana)`,
+      total: avg,
+      unit: 'habilidades',
+      status: status,
+      alert: status === 'danger' ? '⚠️ SIN APRENDIZAJE: Equipo sin evolución' :
+             status === 'warning' ? '⚠️ APRENDIZAJE LENTO: Necesita aceleración' : null
+    };
+  }
+
+  /**
+   * KR7 - KPI3: Índice de Cumplimiento de Compromisos Internos
+   * (Tareas completadas en tiempo / Tareas totales) × 100
+   * Semáforo: Verde ≥90%, Amarillo 70-89%, Rojo <70%
+   */
+  function calcCumplimientoCompromisos(data) {
+    const compromisos = data.compromisos_internos || [];
+    if (compromisos.length === 0) return { labels: [], values: [], summary: 'Sin datos', total: 0 };
+
+    const byMonth = {};
+    compromisos.forEach(row => {
+      const month = row.fecha ? getMonth(row.fecha) : 'Sin fecha';
+      if (!byMonth[month]) byMonth[month] = { completadas: 0, totales: 0 };
+      byMonth[month].totales += 1;
+      const estatus = row.estatus || row.estado || '';
+      if (estatus.toLowerCase().includes('complet') || estatus.toLowerCase() === 'hecho' || estatus.toLowerCase() === 'done') {
+        byMonth[month].completadas += 1;
+      }
+    });
+
+    const sorted = Object.keys(byMonth).sort();
+    const labels = sorted;
+    const values = sorted.map(m => {
+      const { completadas, totales } = byMonth[m];
+      return totales > 0 ? parseFloat((completadas / totales * 100).toFixed(1)) : 0;
+    });
+
+    const totalCompletadas = compromisos.filter(r => {
+      const estatus = r.estatus || r.estado || '';
+      return estatus.toLowerCase().includes('complet') || estatus.toLowerCase() === 'hecho' || estatus.toLowerCase() === 'done';
+    }).length;
+    const totalCompromisos = compromisos.length;
+    const lastValue = values[values.length - 1] || 0;
+    const pctTotal = parseFloat(((totalCompletadas / totalCompromisos) * 100).toFixed(1));
+    const status = pctTotal >= 90 ? 'success' : (pctTotal >= 70 ? 'warning' : 'danger');
+
+    return {
+      labels,
+      values,
+      summary: `Cumplimiento: ${fmt(pctTotal, 1)}% (${totalCompletadas}/${totalCompromisos} tareas)`,
+      total: pctTotal,
+      unit: '%',
+      status: status,
+      alert: status === 'danger' ? '⚠️ CUMPLIMIENTO CRÍTICO: Disciplina operativa en riesgo' :
+             status === 'warning' ? '⚠️ ALERTA: Cumplimiento por debajo de meta' : null
+    };
+  }
+
   /**
    * KR6 - KPI ADICIONAL: Tendencia de Ingresos
    * Comparación del crecimiento/decrecimiento de ingresos por mes
@@ -1814,6 +1941,70 @@ const KPIEngine = (() => {
       },
       compute: (data) => calcTendenciaIngresos(data),
       unit: '%'
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // KR7 - CAPITAL HUMANO
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      id: 'indice_bienestar_equipo',
+      name: 'Índice de Bienestar del Equipo',
+      kr: 'Capital Humano',
+      krMeta: 4.2,
+      description: 'Nivel de satisfacción y bienestar del equipo medido por encuesta semanal (escala 1-5).',
+      formula: 'Promedio(puntuacion) de encuesta de clima laboral semanal',
+      chart_type: 'line',
+      tables: ['bienestar_equipo'],
+      schema: {
+        bienestar_equipo: [
+          { name: 'id', type: 'number' },
+          { name: 'fecha', type: 'date' },
+          { name: 'puntuacion', type: 'number' }
+        ]
+      },
+      compute: (data) => calcIndiceBienestarEquipo(data),
+      unit: 'puntos',
+      alert: true
+    },
+    {
+      id: 'velocidad_aprendizaje',
+      name: 'Velocidad de Aprendizaje del Equipo',
+      kr: 'Capital Humano',
+      krMeta: 3,
+      description: 'Número de nuevas habilidades implementadas por semana.',
+      formula: 'COUNT(habilidades implementadas) por semana',
+      chart_type: 'bar',
+      tables: ['aprendizaje_equipo'],
+      schema: {
+        aprendizaje_equipo: [
+          { name: 'id', type: 'number' },
+          { name: 'fecha', type: 'date' },
+          { name: 'habilidad', type: 'string' }
+        ]
+      },
+      compute: (data) => calcVelocidadAprendizaje(data),
+      unit: 'habilidades',
+      alert: true
+    },
+    {
+      id: 'cumplimiento_compromisos',
+      name: 'Índice de Cumplimiento de Compromisos Internos',
+      kr: 'Capital Humano',
+      krMeta: 90,
+      description: 'Porcentaje de tareas completadas en tiempo respecto al total.',
+      formula: '(Tareas completadas en tiempo / Tareas totales) × 100',
+      chart_type: 'line',
+      tables: ['compromisos_internos'],
+      schema: {
+        compromisos_internos: [
+          { name: 'id', type: 'number' },
+          { name: 'fecha', type: 'date' },
+          { name: 'estatus', type: 'string' },
+          { name: 'estado', type: 'string' }
+        ]
+      },
+      compute: (data) => calcCumplimientoCompromisos(data),
+      unit: '%',
+      alert: true
     }
   ];
 
